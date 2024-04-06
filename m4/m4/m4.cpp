@@ -22,6 +22,48 @@ void displayLeastFareDetails(struct flightData variousFlights[], int count);
 int processFlight(char flightName[20], struct flightData variousFlights[], int* totalCount);
 int main(void)
 {
+	struct flightData variousFlights[100];
+	FILE* flights = NULL;
+	char flightNames[100][30] = { 0 };
+	int count = 0;
+	flights = fopen("flights.txt", "r");
+	if (flights == NULL)
+	{
+		printf("Error: Not able to read the file.\n");
+		return 1;
+	}
+	char buffer[70] = "";
+	while (fgets(buffer, sizeof(buffer), flights) != NULL)
+	{
+		//fgets(buffer, sizeof buffer, flights);
+		char* pName = strchr(buffer, '.');
+		if (pName != nullptr)
+		{
+			*pName = '\0';
+		}
+		strcpy(flightNames[count], buffer);
+		//int a = strlen(buffer) - 5;
+		//strncpy(flightNames, buffer, a);
+		//printf("%s\n", name);
+		//strcpy(flightNames[count], name);
+		count++;
+	}
+	int totalCount = 0;
+	for (int index = 0;index < count;index++)
+	{
+		//printf("%s\n",flightNames[index]);
+
+		int status = processFlight(flightNames[index], variousFlights, &totalCount);
+		if (status == 0)
+		{
+			displayLeastFareDetails(variousFlights, totalCount);
+		}
+		else
+		{
+			printf("Error: Could not process flight data.\n");
+		}
+	}
+	fclose(flights);
 	return 0;
 }
 /*
@@ -111,4 +153,35 @@ int processFlight(char flightName[20], struct flightData variousFlights[], int* 
 	//printf("%d", count);
 	*totalCount = count;
 	return 0;
+}
+void displayLeastFareDetails(struct flightData variousFlights[], int count)
+{
+
+
+	char hold[100] = { 0 };
+	int i = 0;
+	for (int i = 0; i < count; i++)
+	{
+		bool isLeastFare = true;
+
+		// Check if any other flight has the same source and destination but lower fare
+		for (int j = 0; j < count; j++)
+		{
+			if (i != j && strcmp(variousFlights[i].source, variousFlights[j].source) == 0 &&
+				strcmp(variousFlights[i].destination, variousFlights[j].destination) == 0 &&
+				variousFlights[j].fare < variousFlights[i].fare)
+			{
+				isLeastFare = false;
+				break;
+			}
+		}
+
+		if (isLeastFare)
+		{
+			printf("%s : %s to %s, fare $%d\n", variousFlights[i].airline, variousFlights[i].source,
+				variousFlights[i].destination, variousFlights[i].fare);
+		}
+
+	}
+	printf("\n");
 }
