@@ -56,3 +56,59 @@ int parseLine(char* source, char* destination, int* fare, char* line)
 		return -1; // Parsing failed
 	}
 }
+int processFlight(char flightName[20], struct flightData variousFlights[], int* totalCount)
+{
+	strcat(flightName, ".txt");
+	//file name able to get .txt extension
+	FILE* file = fopen(flightName, "r");
+	if (file == NULL)
+	{
+		printf("Error: Not able to read the file.\n");
+		return 1;
+	}
+	char airline[30];
+	//char* fileNameStart = flightName;
+	char* pName = strchr(flightName, '.');
+	if (pName != nullptr)
+	{
+		*pName = '\0';
+	}
+	strcpy(airline, flightName);
+	//removed the .txt extension again
+	char line[100];
+	int status;
+	int count = 0;
+
+	while (fgets(line, sizeof(line), file) != NULL && count < 100)
+	{
+		//taking only one
+		line[strcspn(line, "\n")] = '\0';
+		//printf("%s.",line);
+		char source[50];
+		char destination[50];
+		int fare;
+		status = parseLine(source, destination, &fare, line);
+		//printf("%d\n", status);
+		if (status == 0)
+		{
+			// Parsing successful, store in flights array
+			//printf("Going in");
+			strcpy(variousFlights[count].source, source);
+			strcpy(variousFlights[count].destination, destination);
+			variousFlights[count].fare = fare;
+			strcpy(variousFlights[count].airline, airline);
+			count++;
+		}
+
+		else
+		{
+			fclose(file);
+			return -2; // Parsing line failed
+		}
+
+	}
+	fclose(file);
+	//printf("%d", count);
+	*totalCount = count;
+	return 0;
+}
